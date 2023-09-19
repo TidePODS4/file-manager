@@ -1,52 +1,43 @@
 package ru.server.filemanager.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.Resource;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import ru.server.filemanager.entity.FileMetadata;
-import ru.server.filemanager.repository.FileRepository;
+import org.springframework.transaction.annotation.Transactional;
+import ru.server.filemanager.repository.FileMetadataRepository;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.util.List;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 @Service
+@Transactional(readOnly = true)
 public class FileService {
-    private final FileRepository fileRepository;
+    private final FileMetadataRepository fileMetadataRepository;
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
-    public FileService(FileRepository fileRepository, JdbcTemplate jdbcTemplate) {
-        this.fileRepository = fileRepository;
+    public FileService(FileMetadataRepository fileMetadataRepository, JdbcTemplate jdbcTemplate) {
+        this.fileMetadataRepository = fileMetadataRepository;
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public List<FileMetadata> getFilesInDirectory(FileMetadata directory){
-        return fileRepository.findAllByParentId(directory.getId());
+    public File getFileById(UUID id) {
+
+        var path = "D:\\file_server\\" + getFullPathById(id);
+        return (new File(path));
     }
 
-    @Async
-    public CompletableFuture<Resource> getFileById(UUID id) throws ExecutionException,
-            InterruptedException, FileNotFoundException {
-
-        var file = fileRepository.getReferenceById(id);
-        var path = getFullPathByFile(file);
-        return CompletableFuture.completedFuture(
-                new InputStreamResource(
-                        new FileInputStream(path.get())));
+    public String getFullPathById(UUID id){
+        return (jdbcTemplate.queryForObject(
+                "SELECT get_full_path(?)", String.class, id));
     }
 
-    @Async
-    protected CompletableFuture<String> getFullPathByFile(FileMetadata file){
-        return CompletableFuture.completedFuture(jdbcTemplate.queryForObject(
-                "SELECT get_full_path(?)", String.class,
-                file.getId()));
+    public String getFileMimeType(File file) throws IOException {
+        String mimeType = Files.probeContentType(Paths.get(file.getPath()));
+
+        return mimeType == null ? "application/octet-stream" : mimeType;
     }
 }

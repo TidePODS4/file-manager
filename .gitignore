@@ -4,8 +4,11 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
+**/src/resources/application.properties
+
 
 ### STS ###
+.properties
 .apt_generated
 .classpath
 .factorypath
@@ -16,6 +19,7 @@ build/
 bin/
 !**/src/main/**/bin/
 !**/src/test/**/bin/
+env.properties
 
 ### IntelliJ IDEA ###
 .idea
@@ -35,3 +39,4 @@ out/
 
 ### VS Code ###
 .vscode/
+

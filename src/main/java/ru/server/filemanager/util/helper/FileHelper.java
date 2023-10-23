@@ -4,5 +4,5 @@ import java.io.File;
 import java.io.IOException;
 
 public interface FileHelper {
-    String getFileMimeType(File file) throws IOException;
+    String getFileMimeType(String filePath) throws IOException;
 }

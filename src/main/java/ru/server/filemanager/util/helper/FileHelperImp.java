@@ -10,8 +10,8 @@ import java.nio.file.Paths;
 @Component
 public class FileHelperImp implements FileHelper{
     @Override
-    public String getFileMimeType(File file) throws IOException {
-        String mimeType = Files.probeContentType(Paths.get(file.getPath()));
+    public String getFileMimeType(String filePath) throws IOException {
+        String mimeType = Files.probeContentType(Paths.get(filePath));
         return mimeType == null ? "application/octet-stream" : mimeType;
     }
 }

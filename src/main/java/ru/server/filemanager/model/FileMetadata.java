@@ -31,6 +31,10 @@ public class FileMetadata {
     @NotNull
     private boolean isFolder;
 
+    @ManyToOne
+    @JoinColumn(name = "owner_id")
+    private User owner;
+
     @ManyToMany
     @JoinTable(
             name = "file_user",

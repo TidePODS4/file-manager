@@ -1,7 +1,7 @@
 package ru.server.filemanager.service.imp;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,9 +10,6 @@ import ru.server.filemanager.repository.FileMetadataRepository;
 import ru.server.filemanager.service.FileService;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -22,11 +19,12 @@ import java.util.UUID;
 public class FileServiceImp implements FileService {
     private final FileMetadataRepository fileMetadataRepository;
     private final JdbcTemplate jdbcTemplate;
-    private static final String DOWNLOAD_DIR = "D:\\file_server\\";
+    @Value("${files.paths.download-dir}")
+    private String downloadDir;
 
     @Override
     public File getFileById(UUID id) {
-        var path = DOWNLOAD_DIR + getFullPathById(id);
+        var path = downloadDir + getFullPathById(id);
         return new File(path);
     }
 

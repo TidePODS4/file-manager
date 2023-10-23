@@ -39,6 +39,7 @@ public class SecurityConfig{
                 .authorizeHttpRequests()
                 .anyRequest()
                 .authenticated();
+//        .permitAll();
 
         http
                 .oauth2ResourceServer()

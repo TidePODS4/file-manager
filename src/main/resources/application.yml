@@ -1,0 +1,17 @@
+spring:
+  config:
+    import: optional:database.properties
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/Project
+          jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
+server:
+  port: 8081
+
+jwt:
+  auth:
+    converter:
+      client-id: file-server-rest-api
+      principal-attribute: preferred_username

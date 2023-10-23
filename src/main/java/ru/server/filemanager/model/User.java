@@ -1,5 +1,6 @@
 package ru.server.filemanager.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
@@ -21,6 +22,11 @@ public class User {
     @Column(name = "id")
     private UUID id;
 
+    @JsonIgnore
     @ManyToMany(mappedBy = "users")
     private Set<FileMetadata> files;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "owner")
+    private Set<FileMetadata> ownFiles;
 }

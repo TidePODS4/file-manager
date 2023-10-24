@@ -7,26 +7,29 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.server.filemanager.model.FileMetadata;
-import ru.server.filemanager.service.DirectoryService;
+import ru.server.filemanager.service.imp.DirectoryServiceImp;
 import ru.server.filemanager.service.FileService;
+import ru.server.filemanager.service.imp.FileServiceImp;
+import ru.server.filemanager.util.helper.FileHelper;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.List;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/file")
 public class FileManagerController {
     private final FileService fileService;
+    private final FileHelper fileHelper;
 
     @Autowired
-    public FileManagerController(FileService fileService, DirectoryService directoryService) {
+    public FileManagerController(FileServiceImp fileService,
+                                 DirectoryServiceImp directoryService,
+                                 FileHelper fileHelper) {
         this.fileService = fileService;
+        this.fileHelper = fileHelper;
     }
-
 
     @GetMapping("/{id}/download")
     public ResponseEntity<Resource> getFileDownloadById(@PathVariable("id") UUID id) throws IOException {
@@ -43,7 +46,7 @@ public class FileManagerController {
     private ResponseEntity<Resource> getResourceResponseEntity(
             @PathVariable("id") UUID id, boolean isDownload) throws IOException {
         File file = fileService.getFileById(id);
-        String mimeType = fileService.getFileMimeType(file);
+        String mimeType = fileHelper.getFileMimeType(file);
         String headerType = isDownload ? "attachment" : "inline";
 
         Resource resource = new InputStreamResource(new FileInputStream(file));

@@ -1,5 +1,6 @@
 package ru.server.filemanager.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -21,6 +22,7 @@ public class FileMetadata {
     private UUID id;
 
     @Column(name = "parent_id")
+    @JsonProperty(value = "parent_id")
     private UUID parentId;
 
     @Column(name = "name")
@@ -29,6 +31,7 @@ public class FileMetadata {
 
     @Column(name = "is_folder")
     @NotNull
+    @JsonProperty(value = "is_folder")
     private boolean isFolder;
 
     @ManyToOne

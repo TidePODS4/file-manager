@@ -1,5 +1,6 @@
 package ru.server.filemanager.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
@@ -10,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import ru.server.filemanager.exception.FileNotFoundException;
 import ru.server.filemanager.model.FileMetadata;
+import ru.server.filemanager.service.FileMetadataService;
 import ru.server.filemanager.service.imp.DirectoryServiceImp;
 import ru.server.filemanager.service.FileService;
 import ru.server.filemanager.service.imp.FileServiceImp;
@@ -23,17 +25,11 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/files")
+@RequiredArgsConstructor
 public class FileManagerController {
     private final FileService fileService;
+    private final FileMetadataService fileMetadataService;
     private final FileHelper fileHelper;
-
-    @Autowired
-    public FileManagerController(FileServiceImp fileService,
-                                 DirectoryServiceImp directoryService,
-                                 FileHelper fileHelper) {
-        this.fileService = fileService;
-        this.fileHelper = fileHelper;
-    }
 
     @GetMapping("/{id}/download")
     public ResponseEntity<Resource> getFileDownloadById(@PathVariable("id") UUID id) throws IOException {
@@ -55,10 +51,9 @@ public class FileManagerController {
                 () -> new FileNotFoundException("File " + id + " not found")
         );
 
-        File file = fileService.getFileById(id);
+        File file = fileMetadataService.getFileById(id);
         String mimeType = fileHelper.getFileMimeType(fileMetadata.getName());
         String headerType = isDownload ? "attachment" : "inline";
-
 
         Resource resource = new InputStreamResource(new FileInputStream(file));
 

@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 @Component
-public class TrailingSlashInterceptorConfig implements HandlerInterceptor {
+public class TrailingSlashInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(
             HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler)

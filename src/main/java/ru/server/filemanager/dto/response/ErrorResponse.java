@@ -1,4 +1,4 @@
-package ru.server.filemanager.dto;
+package ru.server.filemanager.dto.response;
 
 public record ErrorResponse(String code, String message) {
 }

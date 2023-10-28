@@ -28,7 +28,8 @@ public class FileMetadataServiceImp implements FileMetadataService {
     @Override
     public boolean isFileWithSameNameAndFolderExists(FileMetadata fileMetadata) {
         return fileMetadataRepository.existsFileMetadataByNameAndParentId(
-                fileMetadata.getName(), fileMetadata.getParentId());
+                fileMetadata.getName(), fileMetadata.getParent() != null ?
+                        fileMetadata.getParent().getId() : null);
     }
 
     @Override

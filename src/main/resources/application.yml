@@ -7,6 +7,11 @@ spring:
         jwt:
           issuer-uri: http://localhost:8080/realms/Project
           jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 500MB
+      max-request-size: 550MB
 server:
   port: 8081
 
@@ -15,3 +20,7 @@ jwt:
     converter:
       client-id: file-server-rest-api
       principal-attribute: preferred_username
+
+files:
+  paths:
+    download-dir: D:\file_server\

@@ -5,9 +5,9 @@ import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.core.context.SecurityContextHolder;
-import ru.server.filemanager.dto.FolderDto;
-import ru.server.filemanager.exception.UserDoesNotExistException;
+import ru.server.filemanager.dto.request.FolderDtoRequest;
+import ru.server.filemanager.dto.response.FileDtoResponse;
+import ru.server.filemanager.dto.response.FolderDtoResponse;
 import ru.server.filemanager.model.FileMetadata;
 import ru.server.filemanager.service.UserService;
 
@@ -22,7 +22,7 @@ public class ModelMapperConfig {
         ModelMapper modelMapper = new ModelMapper();
         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 
-        modelMapper.typeMap(FolderDto.class, FileMetadata.class)
+        modelMapper.typeMap(FolderDtoRequest.class, FileMetadata.class)
                 .addMappings(
                         mapper -> {
                             mapper.map(
@@ -38,6 +38,16 @@ public class ModelMapperConfig {
 //                                    FileMetadata::setOwner
 //                            );
                         }
+                );
+
+        modelMapper.typeMap(FileMetadata.class, FileDtoResponse.class)
+                .addMappings(
+                        mapper -> mapper.map(src -> src.getParent().getId(), FileDtoResponse::setParentId)
+                );
+
+        modelMapper.typeMap(FileMetadata.class, FolderDtoResponse.class)
+                .addMappings(
+                        mapper -> mapper.map(src -> src.getParent().getId(), FolderDtoResponse::setParentId)
                 );
 
 //        modelMapper.createTypeMap(ItemDTO.class, Item.class);

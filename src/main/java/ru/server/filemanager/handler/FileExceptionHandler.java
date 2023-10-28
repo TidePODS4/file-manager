@@ -6,8 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ru.server.filemanager.dto.ErrorResponse;
-import ru.server.filemanager.exception.DirectoryNotCreatedException;
+import ru.server.filemanager.dto.response.ErrorResponse;
+import ru.server.filemanager.exception.FileNotDeletedException;
 import ru.server.filemanager.exception.FileNotFoundException;
 import ru.server.filemanager.exception.FileNotUploadedException;
 
@@ -24,6 +24,12 @@ public class FileExceptionHandler {
     @ExceptionHandler(FileNotUploadedException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleFileNotUploadedException(FileNotUploadedException ex){
+        return new ErrorResponse(HttpStatus.BAD_REQUEST.getReasonPhrase(), ex.getMessage());
+    }
+
+    @ExceptionHandler(FileNotDeletedException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleFileNotDeletedExceptionException(FileNotDeletedException ex){
         return new ErrorResponse(HttpStatus.BAD_REQUEST.getReasonPhrase(), ex.getMessage());
     }
 }

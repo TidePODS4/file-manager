@@ -25,10 +25,6 @@ public class FileMetadataValidator implements Validator {
     public void validate(@NonNull Object target, @NonNull Errors errors) {
         FileMetadata file = (FileMetadata) target;
 
-        if (fileService.getFileMetadataById(file.getParentId()).isEmpty()){
-            errors.rejectValue("parentId", "", "This file does not exist.");
-        }
-
         if (fileMetadataService.isFileWithSameNameAndFolderExists(file)){
             errors.rejectValue("name", "",
                     "File with this name in current directory already exists");

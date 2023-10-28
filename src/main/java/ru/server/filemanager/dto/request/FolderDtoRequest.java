@@ -1,21 +1,20 @@
-package ru.server.filemanager.dto;
+package ru.server.filemanager.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.Column;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import ru.server.filemanager.model.User;
 
 import java.util.UUID;
 
 @Data
-public class FolderDto {
+public class FolderDtoRequest {
     @JsonProperty(value = "parent_id")
+    @Nullable
     private UUID parentId;
 
     @NotEmpty(message = "Name should not be empty")
+    @Max(value = 200, message = "Name length should be less than 200 characters")
     private String name;
 }

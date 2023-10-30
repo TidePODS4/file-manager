@@ -93,7 +93,7 @@ public class DirectoryManagerController {
     public ResponseEntity<Void> deleteFolder(@PathVariable("id") UUID id){
         directoryService.deleteFolder(id);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/test")

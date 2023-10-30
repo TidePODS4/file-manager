@@ -69,7 +69,7 @@ public class FileManagerController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteFile(@PathVariable("id") UUID id){
         fileService.deleteFile(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 
     private ResponseEntity<Resource> getResourceResponseEntity(

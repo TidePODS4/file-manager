@@ -7,6 +7,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.server.filemanager.dto.request.FolderDtoRequest;
+import ru.server.filemanager.dto.response.BreadCrumbDto;
 import ru.server.filemanager.dto.response.FileDtoResponse;
 import ru.server.filemanager.dto.response.FolderDtoResponse;
 import ru.server.filemanager.exception.DirectoryNotDeletedException;
@@ -132,5 +133,16 @@ public class DirectoryServiceImp implements DirectoryService {
         }
 
         storageService.deleteFolder(path);
+    }
+
+    @Override
+    public List<BreadCrumbDto> getBreadCrumbsByFolderId(UUID id) {
+        List<BreadCrumbDto> breadcrumbs = new ArrayList<>();
+        FileMetadata folder = fileMetadataRepository.findFileMetadataById(id).orElse(null);
+        while (folder != null) {
+            breadcrumbs.add(new BreadCrumbDto(folder.getId(), folder.getName()));
+            folder = fileMetadataRepository.findFileMetadataById(folder.getParent().getId()).orElse(null);
+        }
+        return breadcrumbs;
     }
 }

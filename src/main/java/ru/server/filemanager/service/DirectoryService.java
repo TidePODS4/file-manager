@@ -2,6 +2,7 @@ package ru.server.filemanager.service;
 
 import org.springframework.hateoas.CollectionModel;
 import ru.server.filemanager.dto.request.FolderDtoRequest;
+import ru.server.filemanager.dto.response.BreadCrumbDto;
 import ru.server.filemanager.dto.response.FileDtoResponse;
 import ru.server.filemanager.dto.response.FolderDtoResponse;
 import ru.server.filemanager.model.FileMetadata;
@@ -21,4 +22,5 @@ public interface DirectoryService {
     FolderDtoResponse convertToFolderDtoResponse(FileMetadata fileMetadata) throws IOException;
     CollectionModel<FileDtoResponse> convertToFileCollectionModel(List<FileDtoResponse> fileDtoResponses) throws IOException;
     void deleteFolder(UUID id);
+    List<BreadCrumbDto> getBreadCrumbsByFolderId(UUID id);
 }

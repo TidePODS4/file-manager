@@ -29,7 +29,11 @@ public class HateoasLinkHelper {
                 .getDirectoryById(fileDtoResponse.getParentId()))
                 .withRel("parent");
 
-        fileDtoResponse.add(selfLink, parentLink, contentLink);
+        Link breadcrumbsLink = linkTo(methodOn(DirectoryManagerController.class)
+                .getBreadCrumbsByFolderId(fileDtoResponse.getId()))
+                .withRel("breadcrumbs");
+
+        fileDtoResponse.add(selfLink, parentLink, contentLink, breadcrumbsLink);
     }
 
     public void setLinksToFile(FileDtoResponse fileDtoResponse) throws IOException {
@@ -70,7 +74,11 @@ public class HateoasLinkHelper {
                 .getFilesInDirectory(folderDtoResponse.getId()))
                 .withRel("content");
 
-        folderDtoResponse.add(selfLink, parentLink, contentLink);
+        Link breadcrumbsLink = linkTo(methodOn(DirectoryManagerController.class)
+                .getBreadCrumbsByFolderId(folderDtoResponse.getId()))
+                .withRel("breadcrumbs");
+
+        folderDtoResponse.add(selfLink, parentLink, contentLink, breadcrumbsLink);
     }
 
     public void setLinksToRoot(CollectionModel<FileDtoResponse> collectionModel) throws IOException {

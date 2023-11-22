@@ -12,6 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.server.filemanager.dto.request.FolderDtoRequest;
+import ru.server.filemanager.dto.response.BreadCrumbDto;
 import ru.server.filemanager.dto.response.FileDtoResponse;
 import ru.server.filemanager.dto.response.FolderDtoResponse;
 import ru.server.filemanager.exception.DirectoryNotCreatedException;
@@ -54,6 +55,12 @@ public class DirectoryManagerController {
         }
 
         return ResponseEntity.ok(directoryService.convertToFileCollectionModel(dtoResponse));
+    }
+
+    @GetMapping("/{id}/breadcrumbs")
+    public ResponseEntity<List<BreadCrumbDto>> getBreadCrumbsByFolderId(@PathVariable("id") UUID id){
+        var breadcrumbs = directoryService.getBreadCrumbsByFolderId(id);
+        return ResponseEntity.ok(breadcrumbs);
     }
 
     @GetMapping("/{id}/content")

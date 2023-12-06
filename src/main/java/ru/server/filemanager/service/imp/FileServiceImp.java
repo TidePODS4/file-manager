@@ -53,9 +53,14 @@ public class FileServiceImp implements FileService {
         fileMetadata.setSize(file.getSize());
         fileMetadata.setOwner(userOpt.orElseThrow(
                 () -> new UserDoesNotExistException("User "+ userId + " not found")));
-        fileMetadata.setParent(fileMetadataRepository.findFileMetadataById(folderId).orElseThrow(
-                () -> new DirectoryNotFoundException("Directory " + folderId + " not found")
-        ));
+        if (folderId == null){
+            fileMetadata.setParent(null);
+        }
+        else{
+            fileMetadata.setParent(fileMetadataRepository.findFileMetadataById(folderId).orElseThrow(
+                    () -> new DirectoryNotFoundException("Directory " + folderId + " not found")
+            ));
+        }
 
         fileMetadataRepository.save(fileMetadata);
         fileMetadataRepository.flush();
@@ -85,5 +90,25 @@ public class FileServiceImp implements FileService {
         fileMetadataRepository.flush();
 
         storageService.deleteFile(path);
+    }
+
+    @Override
+    @Transactional
+    public FileMetadata update(FileMetadata fileMetadata, UUID dirId) {
+        var metadata =
+                fileMetadataRepository.findFileMetadataByIdAndOwnerId(dirId, getUserId())
+                        .orElseThrow(() ->
+                                new DirectoryNotFoundException("Folder " + dirId + " not found"));
+
+        metadata.setName(fileMetadata.getName());
+
+        return fileMetadataRepository.save(metadata);
+    }
+
+    private UUID getUserId(){
+        return userService.getUserIdBySecurityContext(
+                SecurityContextHolder
+                        .getContext()
+        );
     }
 }

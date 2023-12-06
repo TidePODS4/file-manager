@@ -14,4 +14,5 @@ public interface FileService {
     FileMetadata uploadFile(MultipartFile file, UUID folderId);
     FileDtoResponse convertToFileDtoResponse(FileMetadata fileMetadata) throws IOException;
     void deleteFile(UUID id);
+    FileMetadata update(FileMetadata fileMetadata, UUID dirId);
 }

@@ -1,5 +1,6 @@
 package ru.server.filemanager.service;
 
+import org.springframework.core.io.InputStreamSource;
 import org.springframework.web.multipart.MultipartFile;
 import ru.server.filemanager.model.FileMetadata;
 

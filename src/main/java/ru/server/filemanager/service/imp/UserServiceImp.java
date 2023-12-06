@@ -31,4 +31,11 @@ public class UserServiceImp implements UserService {
     public Optional<User> getUserById(UUID id) {
         return userRepository.findById(id);
     }
+
+    @Override
+    public User addUser(UUID id) {
+        User user = new User();
+        user.setId(id);
+        return userRepository.save(user);
+    }
 }

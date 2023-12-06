@@ -9,4 +9,5 @@ import java.util.UUID;
 public interface UserService {
     UUID getUserIdBySecurityContext(SecurityContext securityContext);
     Optional<User> getUserById(UUID id);
+    User addUser(UUID id);
 }

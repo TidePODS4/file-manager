@@ -7,7 +7,6 @@ import ru.server.filemanager.controller.DirectoryManagerController;
 import ru.server.filemanager.controller.FileManagerController;
 import ru.server.filemanager.dto.response.FileDtoResponse;
 import ru.server.filemanager.dto.response.FolderDtoResponse;
-import ru.server.filemanager.service.FileService;
 
 import java.io.IOException;
 
@@ -16,24 +15,34 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Component
 public class HateoasLinkHelper {
-    public void setLinksToContentFolder(FileDtoResponse fileDtoResponse) throws IOException {
-        Link selfLink = linkTo(methodOn(DirectoryManagerController.class)
-                .getDirectoryById(fileDtoResponse.getId()))
-                .withSelfRel();
+    public void setLinksToFolderContent(FileDtoResponse fileDtoResponse) throws IOException {
+        if (!fileDtoResponse.isFolder()){
+            setLinksToFile(fileDtoResponse);
+        } else{
+            Link selfLink = linkTo(methodOn(DirectoryManagerController.class)
+                    .getDirectoryById(fileDtoResponse.getId()))
+                    .withSelfRel();
 
-        Link contentLink = linkTo(methodOn(DirectoryManagerController.class)
-                .getFilesInDirectory(fileDtoResponse.getId()))
-                .withRel("content");
+            Link contentLink = linkTo(methodOn(DirectoryManagerController.class)
+                    .getFilesInDirectory(fileDtoResponse.getId()))
+                    .withRel("content");
+            Link breadcrumbsLink = linkTo(methodOn(DirectoryManagerController.class)
+                    .getBreadCrumbsByFolderId(fileDtoResponse.getId()))
+                    .withRel("breadcrumbs");
+
+            Link downloadLink = linkTo(methodOn(DirectoryManagerController.class)
+                    .downloadFolder(null, fileDtoResponse.getId()))
+                    .withRel("download");
+
+            fileDtoResponse.add(selfLink, contentLink, breadcrumbsLink, downloadLink);
+        }
+
 
         Link parentLink = linkTo(methodOn(DirectoryManagerController.class)
                 .getDirectoryById(fileDtoResponse.getParentId()))
                 .withRel("parent");
 
-        Link breadcrumbsLink = linkTo(methodOn(DirectoryManagerController.class)
-                .getBreadCrumbsByFolderId(fileDtoResponse.getId()))
-                .withRel("breadcrumbs");
-
-        fileDtoResponse.add(selfLink, parentLink, contentLink, breadcrumbsLink);
+        fileDtoResponse.add(parentLink);
     }
 
     public void setLinksToFile(FileDtoResponse fileDtoResponse) throws IOException {
@@ -78,7 +87,15 @@ public class HateoasLinkHelper {
                 .getBreadCrumbsByFolderId(folderDtoResponse.getId()))
                 .withRel("breadcrumbs");
 
-        folderDtoResponse.add(selfLink, parentLink, contentLink, breadcrumbsLink);
+        Link uploadFileLink = linkTo(methodOn(DirectoryManagerController.class)
+                .uploadFile(null, folderDtoResponse.getId()))
+                .withRel("upload_file");
+
+        Link downloadLink = linkTo(methodOn(DirectoryManagerController.class)
+                .downloadFolder(null, folderDtoResponse.getId()))
+                .withRel("download");
+
+        folderDtoResponse.add(selfLink, parentLink, contentLink, breadcrumbsLink, uploadFileLink, downloadLink);
     }
 
     public void setLinksToRoot(CollectionModel<FileDtoResponse> collectionModel) throws IOException {
@@ -86,6 +103,10 @@ public class HateoasLinkHelper {
                 .getRootFiles())
                 .withSelfRel();
 
-        collectionModel.add(selfLink);
+        Link uploadFileLink = linkTo(methodOn(DirectoryManagerController.class)
+                .uploadFileToRoot(null))
+                .withRel("upload_file");
+
+        collectionModel.add(selfLink, uploadFileLink);
     }
 }

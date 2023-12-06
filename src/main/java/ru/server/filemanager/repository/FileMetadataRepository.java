@@ -19,6 +19,7 @@ public interface FileMetadataRepository extends JpaRepository<FileMetadata, UUID
 //    @Query("select f from FileMetadata f join f.users u where u.id = :userId")
 //    List<FileMetadata> findByUsersIdAndParentId(@Param("userId") UUID userId, UUID parentId);
     List<FileMetadata> findAllByOwnerIdAndParentId(UUID ownerId, UUID parentId);
+    Optional<FileMetadata> findFileMetadataByIdAndOwnerId(UUID id, UUID ownerId);
     Optional<FileMetadata> findFileMetadataById(UUID id);
     boolean existsFileMetadataByNameAndParentId(@NotEmpty String name, UUID parentId);
 }

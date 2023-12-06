@@ -6,23 +6,20 @@ import org.springframework.hateoas.CollectionModel;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.server.filemanager.dto.request.FileDtoRequest;
 import ru.server.filemanager.dto.request.FolderDtoRequest;
 import ru.server.filemanager.dto.response.BreadCrumbDto;
 import ru.server.filemanager.dto.response.FileDtoResponse;
 import ru.server.filemanager.dto.response.FolderDtoResponse;
 import ru.server.filemanager.exception.DirectoryNotDeletedException;
 import ru.server.filemanager.exception.DirectoryNotFoundException;
-import ru.server.filemanager.exception.UserDoesNotExistException;
 import ru.server.filemanager.model.FileMetadata;
 import ru.server.filemanager.repository.FileMetadataRepository;
 import ru.server.filemanager.service.*;
 import ru.server.filemanager.util.helper.HateoasLinkHelper;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @Transactional(readOnly = true)
@@ -34,31 +31,28 @@ public class DirectoryServiceImp implements DirectoryService {
     private final StorageService storageService;
     private final ModelMapper modelMapper;
     private final HateoasLinkHelper hateoasLinkHelper;
-    private final FileService fileService;
 
     @Override
     public List<FileMetadata> getFilesMetaByDirectoryId(UUID directoryId){
-        UUID ownerId = userService.getUserIdBySecurityContext(
-                SecurityContextHolder
-                        .getContext()
-        );
+        UUID ownerId = getUserId();
 
+        var a = fileMetadataRepository.findAllByOwnerIdAndParentId(ownerId, directoryId);
         return fileMetadataRepository.findAllByOwnerIdAndParentId(ownerId, directoryId);
     }
 
     @Override
     public List<FileMetadata> getRootFiles(){
-        UUID ownerId = userService.getUserIdBySecurityContext(
-                SecurityContextHolder
-                        .getContext()
-        );
+        UUID ownerId = getUserId();
+
 
         return fileMetadataRepository.findAllByOwnerIdAndParentId(ownerId, null);
     }
 
     @Override
     public Optional<FileMetadata> getDirectoryById(UUID id) {
-        return fileMetadataRepository.findFileMetadataById(id);
+        UUID ownerId = getUserId();
+
+        return fileMetadataRepository.findFileMetadataByIdAndOwnerId(id, ownerId);
     }
 
     @Override
@@ -75,8 +69,7 @@ public class DirectoryServiceImp implements DirectoryService {
         var fileMetadata = modelMapper.map(folderDto, FileMetadata.class);
         var userId = userService.getUserIdBySecurityContext(SecurityContextHolder.getContext());
         var userOpt = userService.getUserById(userId);
-        fileMetadata.setOwner(userOpt.orElseThrow(
-                () -> new UserDoesNotExistException("User "+ userId + " not found")));
+        fileMetadata.setOwner(userOpt.orElse(userService.addUser(userId)));
         var parent = fileMetadataRepository
                 .findFileMetadataById(folderDto.getParentId())
                 .orElse(null);
@@ -88,7 +81,7 @@ public class DirectoryServiceImp implements DirectoryService {
     @Override
     public FileDtoResponse convertToFileDtoResponse(FileMetadata fileMetadata) throws IOException {
         FileDtoResponse fileDtoResponse = modelMapper.map(fileMetadata, FileDtoResponse.class);
-        hateoasLinkHelper.setLinksToContentFolder(fileDtoResponse);
+        hateoasLinkHelper.setLinksToFolderContent(fileDtoResponse);
         return fileDtoResponse;
     }
 
@@ -108,7 +101,8 @@ public class DirectoryServiceImp implements DirectoryService {
     }
 
     @Override
-    public CollectionModel<FileDtoResponse> convertToFileCollectionModel(List<FileDtoResponse> fileDtoResponses) throws IOException {
+    public CollectionModel<FileDtoResponse> convertToFileCollectionModel(List<FileDtoResponse> fileDtoResponses)
+            throws IOException {
         CollectionModel<FileDtoResponse> collectionModel = CollectionModel.of(fileDtoResponses);
         hateoasLinkHelper.setLinksToRoot(collectionModel);
 
@@ -116,9 +110,33 @@ public class DirectoryServiceImp implements DirectoryService {
     }
 
     @Override
+    public FileMetadata convertToEntity(FileDtoRequest fileDtoRequest) {
+        var fileMetadata = modelMapper.map(fileDtoRequest, FileMetadata.class);
+        var userId = userService.getUserIdBySecurityContext(SecurityContextHolder.getContext());
+        var userOpt = userService.getUserById(userId);
+        fileMetadata.setOwner(userOpt.orElse(userService.addUser(userId)));
+
+        FileMetadata parent;
+
+        if (fileDtoRequest.getParentId() == null){
+            parent = null;
+        } else {
+            parent = fileMetadataRepository
+                    .findFileMetadataById(fileDtoRequest.getParentId())
+                    .orElseThrow(() -> new DirectoryNotFoundException(
+                            "Directory " + fileDtoRequest.getParentId() + " not found"));
+        }
+
+        fileMetadata.setParent(parent);
+        return fileMetadata;
+    }
+
+
+    @Override
     @Transactional
     public void deleteFolder(UUID id) {
-        var folderOptional = fileMetadataRepository.findFileMetadataById(id);
+        UUID ownerId = getUserId();
+        var folderOptional = fileMetadataRepository.findFileMetadataByIdAndOwnerId(id, ownerId);
         var folder = folderOptional.orElseThrow(() -> new DirectoryNotFoundException(
                 "Directory " + id + " not found"
         ));
@@ -137,12 +155,41 @@ public class DirectoryServiceImp implements DirectoryService {
 
     @Override
     public List<BreadCrumbDto> getBreadCrumbsByFolderId(UUID id) {
+        UUID ownerId = getUserId();
+
         List<BreadCrumbDto> breadcrumbs = new ArrayList<>();
-        FileMetadata folder = fileMetadataRepository.findFileMetadataById(id).orElse(null);
+        FileMetadata folder = fileMetadataRepository.findFileMetadataByIdAndOwnerId(id, ownerId).orElse(null);
         while (folder != null) {
             breadcrumbs.add(new BreadCrumbDto(folder.getId(), folder.getName()));
-            folder = fileMetadataRepository.findFileMetadataById(folder.getParent().getId()).orElse(null);
+            if (folder.getParent() != null){
+                folder = fileMetadataRepository.findFileMetadataByIdAndOwnerId(
+                        folder.getParent().getId(), ownerId).orElse(null);
+            }
+            else folder = null;
         }
+
+        Collections.reverse(breadcrumbs);
+
         return breadcrumbs;
+    }
+
+    @Override
+    @Transactional
+    public FileMetadata update(FileMetadata fileMetadata, UUID dirId) {
+        var metadata =
+                fileMetadataRepository.findFileMetadataByIdAndOwnerId(dirId, getUserId())
+                        .orElseThrow(() ->
+                        new DirectoryNotFoundException("Folder " + dirId + " not found"));
+
+        metadata.setName(fileMetadata.getName());
+
+        return fileMetadataRepository.save(metadata);
+    }
+
+    private UUID getUserId(){
+        return userService.getUserIdBySecurityContext(
+                SecurityContextHolder
+                        .getContext()
+        );
     }
 }

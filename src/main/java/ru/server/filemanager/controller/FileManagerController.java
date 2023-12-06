@@ -14,17 +14,19 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import ru.server.filemanager.dto.request.FileDtoRequest;
 import ru.server.filemanager.dto.request.FolderDtoRequest;
 import ru.server.filemanager.dto.response.FileDtoResponse;
-import ru.server.filemanager.exception.DirectoryNotCreatedException;
-import ru.server.filemanager.exception.FileNotFoundException;
-import ru.server.filemanager.exception.UserDoesNotExistException;
+import ru.server.filemanager.exception.*;
 import ru.server.filemanager.model.FileMetadata;
+import ru.server.filemanager.service.DirectoryService;
 import ru.server.filemanager.service.FileMetadataService;
 import ru.server.filemanager.service.imp.DirectoryServiceImp;
 import ru.server.filemanager.service.FileService;
 import ru.server.filemanager.service.imp.FileServiceImp;
+import ru.server.filemanager.util.ErrorBuilder;
 import ru.server.filemanager.util.helper.FileHelper;
+import ru.server.filemanager.util.validator.FileMetadataValidator;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -37,8 +39,11 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class FileManagerController {
     private final FileService fileService;
+    private final DirectoryService directoryService;
     private final FileMetadataService fileMetadataService;
     private final FileHelper fileHelper;
+    private final FileMetadataValidator fileMetadataValidator;
+    private final ErrorBuilder errorBuilder;
 
     @GetMapping("/{id}")
     public ResponseEntity<FileDtoResponse> getFileMetadataById(@PathVariable("id") UUID id) throws IOException {
@@ -56,14 +61,6 @@ public class FileManagerController {
     @GetMapping("/{id}/preview")
     public ResponseEntity<Resource> getFilePreviewById(@PathVariable("id") UUID id) throws IOException {
         return getResourceResponseEntity(id, false);
-    }
-
-    @PostMapping()
-    public ResponseEntity<FileDtoResponse> uploadFile(@RequestParam("file") MultipartFile file,
-                                                      @RequestParam("folder_id") UUID folderId) throws IOException {
-        var metadata = fileService.uploadFile(file, folderId);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(fileService.convertToFileDtoResponse(metadata));
     }
 
     @DeleteMapping("/{id}")
@@ -92,5 +89,22 @@ public class FileManagerController {
                 .contentLength(file.length())
                 .contentType(MediaType.parseMediaType(mimeType))
                 .body(resource);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<FileDtoResponse> updateFile(@PathVariable("id") UUID id,
+                                                        @RequestBody @Valid FileDtoRequest fileDtoRequest,
+                                                        BindingResult bindingResult) throws IOException {
+        var metadata = directoryService.convertToEntity(fileDtoRequest);
+        fileMetadataValidator.validate(metadata, bindingResult);
+
+        if (bindingResult.hasErrors()){
+            throw new FileNotUpdatedException(errorBuilder.buildErrorMsg(bindingResult));
+        }
+
+        var metadataResponse = fileService.update(metadata, id);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(directoryService.convertToFileDtoResponse(metadataResponse));
     }
 }

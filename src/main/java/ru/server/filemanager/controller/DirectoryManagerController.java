@@ -1,25 +1,34 @@
 package ru.server.filemanager.controller;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.InputStreamSource;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.config.EnableHypermediaSupport;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+import ru.server.filemanager.dto.request.FileDtoRequest;
 import ru.server.filemanager.dto.request.FolderDtoRequest;
 import ru.server.filemanager.dto.response.BreadCrumbDto;
 import ru.server.filemanager.dto.response.FileDtoResponse;
 import ru.server.filemanager.dto.response.FolderDtoResponse;
 import ru.server.filemanager.exception.DirectoryNotCreatedException;
 import ru.server.filemanager.exception.DirectoryNotFoundException;
+import ru.server.filemanager.exception.DirectoryNotUpdatedException;
 import ru.server.filemanager.exception.UserDoesNotExistException;
 import ru.server.filemanager.model.FileMetadata;
 import ru.server.filemanager.service.DirectoryService;
+import ru.server.filemanager.service.FileMetadataService;
 import ru.server.filemanager.service.FileService;
 import ru.server.filemanager.service.UserService;
 import ru.server.filemanager.util.ErrorBuilder;
@@ -39,7 +48,7 @@ import java.util.stream.Collectors;
 @EnableHypermediaSupport(type = EnableHypermediaSupport.HypermediaType.HAL)
 public class DirectoryManagerController {
     private final DirectoryService directoryService;
-    private final UserService userService;
+    private final FileMetadataService fileMetadataService;
     private final FileMetadataValidator fileMetadataValidator;
     private final ErrorBuilder errorBuilder;
     private final FileService fileService;
@@ -96,6 +105,26 @@ public class DirectoryManagerController {
                 .body(directoryService.convertToFileDtoResponse(folderMetadata));
     }
 
+    @PostMapping("/{id}")
+    public ResponseEntity<FileDtoResponse> createNewFolderInFolder(@RequestBody @Valid FolderDtoRequest folderDto,
+                                                                   BindingResult bindingResult,
+                                                                   @PathVariable("id") UUID parentId)
+            throws IOException {
+        folderDto.setParentId(parentId);
+        var fileMetadata = directoryService.convertToEntity(folderDto);
+
+        fileMetadataValidator.validate(fileMetadata, bindingResult);
+
+        if (bindingResult.hasErrors()){
+            throw new DirectoryNotCreatedException(errorBuilder.buildErrorMsg(bindingResult));
+        }
+
+        var folderMetadata = directoryService.create(fileMetadata);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(directoryService.convertToFileDtoResponse(folderMetadata));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteFolder(@PathVariable("id") UUID id){
         directoryService.deleteFolder(id);
@@ -106,5 +135,50 @@ public class DirectoryManagerController {
     @GetMapping("/test")
     public String test(){
         return HttpStatus.BAD_REQUEST.getReasonPhrase();
+    }
+
+    @PostMapping("/{id}/upload-file")
+    public ResponseEntity<FileDtoResponse> uploadFile(@RequestPart("file") MultipartFile file,
+                                                      @PathVariable("id") UUID folderId) throws IOException {
+        var metadata = fileService.uploadFile(file, folderId);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(fileService.convertToFileDtoResponse(metadata));
+    }
+
+    @PostMapping("/upload-file")
+    public ResponseEntity<FileDtoResponse> uploadFileToRoot(@RequestPart("file") MultipartFile file)
+            throws IOException {
+        var metadata = fileService.uploadFile(file, null);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(fileService.convertToFileDtoResponse(metadata));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<FileDtoResponse> updateFolder(@PathVariable("id") UUID id,
+                                                        @RequestBody @Valid FileDtoRequest fileDtoRequest,
+                                                        BindingResult bindingResult) throws IOException {
+        var metadata = directoryService.convertToEntity(fileDtoRequest);
+        fileMetadataValidator.validate(metadata, bindingResult);
+
+        if (bindingResult.hasErrors()){
+            throw new DirectoryNotUpdatedException(errorBuilder.buildErrorMsg(bindingResult));
+        }
+
+        var metadataResponse = directoryService.update(metadata, id);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(directoryService.convertToFileDtoResponse(metadataResponse));
+    }
+
+    @GetMapping("/{id}/download")
+    public StreamingResponseBody downloadFolder(HttpServletResponse response, @PathVariable("id") UUID id){
+        var fileMetadata = directoryService.getDirectoryById(id)
+                .orElseThrow(() -> new DirectoryNotFoundException("Directory " + id + " not found"));
+
+        response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
+        response.setHeader("Content-Disposition", "attachment; filename=" +
+                fileMetadata.getName() + ".zip");
+
+        return fileMetadataService.getFolderZipById(id);
     }
 }

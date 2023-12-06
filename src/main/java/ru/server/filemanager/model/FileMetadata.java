@@ -25,13 +25,9 @@ public class FileMetadata {
     @Nullable
     private UUID id;
 
-    @ManyToOne(cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
-    @OnDelete(action = OnDeleteAction.CASCADE)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
     private FileMetadata parent;
-
-//    @Column(name = "parent_id", insertable = false, updatable = false)
-//    private UUID parentId1;
 
     @Column(name = "name")
     @NotEmpty

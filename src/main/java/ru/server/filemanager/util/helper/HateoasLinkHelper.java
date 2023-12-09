@@ -5,6 +5,7 @@ import org.springframework.hateoas.Link;
 import org.springframework.stereotype.Component;
 import ru.server.filemanager.controller.DirectoryManagerController;
 import ru.server.filemanager.controller.FileManagerController;
+import ru.server.filemanager.controller.SearchController;
 import ru.server.filemanager.dto.response.FileDtoResponse;
 import ru.server.filemanager.dto.response.FolderDtoResponse;
 
@@ -108,5 +109,14 @@ public class HateoasLinkHelper {
                 .withRel("upload_file");
 
         collectionModel.add(selfLink, uploadFileLink);
+    }
+
+    public void setLinksToSearchResult(CollectionModel<FileDtoResponse> collectionModel, String name)
+            throws IOException {
+        Link selfLink = linkTo(methodOn(SearchController.class)
+                .searchByName(name))
+                .withSelfRel();
+
+        collectionModel.add(selfLink);
     }
 }

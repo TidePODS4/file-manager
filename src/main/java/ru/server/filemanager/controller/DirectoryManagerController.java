@@ -56,10 +56,10 @@ public class DirectoryManagerController {
     @GetMapping()
 //    @PreAuthorize("hasRole(T(ru.server.filemanager.util.Role).ADMIN.getRole())")
     public ResponseEntity<CollectionModel<FileDtoResponse>> getRootFiles() throws IOException{
-        var fileMetadata = directoryService.getRootFiles();
+        var filesMetadata = directoryService.getRootFiles();
         var dtoResponse = new ArrayList<FileDtoResponse>();
-        for (FileMetadata fileMetadatum : fileMetadata) {
-            FileDtoResponse fileDtoResponse = directoryService.convertToFileDtoResponse(fileMetadatum);
+        for (FileMetadata fileMetadata : filesMetadata) {
+            FileDtoResponse fileDtoResponse = directoryService.convertToFileDtoResponse(fileMetadata);
             dtoResponse.add(fileDtoResponse);
         }
 

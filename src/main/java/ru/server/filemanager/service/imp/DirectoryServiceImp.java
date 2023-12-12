@@ -19,6 +19,7 @@ import ru.server.filemanager.service.*;
 import ru.server.filemanager.util.helper.HateoasLinkHelper;
 
 import java.io.IOException;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 @Service
@@ -58,6 +59,8 @@ public class DirectoryServiceImp implements DirectoryService {
     @Override
     @Transactional
     public FileMetadata create(FileMetadata fileMetadata) {
+        fileMetadata.setCreationDate(ZonedDateTime.now());
+        fileMetadata.setUpdateDate(fileMetadata.getCreationDate());
         var file = fileMetadataRepository.save(fileMetadata);
         fileMetadataRepository.flush();
         storageService.createDirectory(fileMetadataService.getFullPathById(file.getId()));
@@ -182,6 +185,7 @@ public class DirectoryServiceImp implements DirectoryService {
                         new DirectoryNotFoundException("Folder " + dirId + " not found"));
 
         metadata.setName(fileMetadata.getName());
+        fileMetadata.setUpdateDate(ZonedDateTime.now());
 
         return fileMetadataRepository.save(metadata);
     }

@@ -15,9 +15,6 @@ import java.util.UUID;
 
 @Repository
 public interface FileMetadataRepository extends JpaRepository<FileMetadata, UUID> {
-//    List<FileMetadata> findAllByUsersContainsAndParentId(User user, UUID parentId);
-//    @Query("select f from FileMetadata f join f.users u where u.id = :userId")
-//    List<FileMetadata> findByUsersIdAndParentId(@Param("userId") UUID userId, UUID parentId);
     List<FileMetadata> findAllByOwnerIdAndParentId(UUID ownerId, UUID parentId);
     Optional<FileMetadata> findFileMetadataByIdAndOwnerId(UUID id, UUID ownerId);
     Optional<FileMetadata> findFileMetadataById(UUID id);

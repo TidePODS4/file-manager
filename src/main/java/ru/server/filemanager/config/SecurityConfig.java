@@ -25,19 +25,6 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig{
-//    private final JWTAuthenticationFilter jwtAuthFilter;
-//    private final JWTAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-//
-//    @Bean
-//    public static PasswordEncoder passwordEncoder(){
-//        return new BCryptPasswordEncoder();
-//    }
-//
-//    @Bean
-//    public AuthenticationManager authenticationManager(
-//            AuthenticationConfiguration configuration) throws Exception {
-//        return configuration.getAuthenticationManager();
-//    }
     private final JwtAuthConverter jwtAuthConverter;
 
     @Bean
@@ -63,10 +50,6 @@ public class SecurityConfig{
                                 .requestMatchers("/v3/api-docs/**").permitAll()
                                 .anyRequest().authenticated()
                 );
-//                .anyRequest()
-//                .authenticated();
-//        .permitAll();
-//        http.cors(AbstractHttpConfigurer::disable);
 
         http
                 .oauth2ResourceServer(s ->
@@ -81,25 +64,6 @@ public class SecurityConfig{
                 );
 
         return http.build();
-//        http.csrf().disable()
-//                .authorizeHttpRequests((authorize) ->
-//                        //authorize.anyRequest().authenticated()
-//                        authorize.requestMatchers(HttpMethod.GET, "/api/**").permitAll()
-//                                //.requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
-//                                .requestMatchers("/api/auth/**").permitAll()
-//                                .requestMatchers("/swagger-ui/**").permitAll()
-//                                .requestMatchers("/v3/api-docs/**").permitAll()
-//                                .anyRequest().authenticated()
-//
-//                ).exceptionHandling( exception -> exception
-//                        .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-//                ).sessionManagement( session -> session
-//                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-//                );
-//
-//        http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-//
-//        return http.build();
     }
 
 }

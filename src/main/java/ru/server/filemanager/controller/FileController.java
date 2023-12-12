@@ -2,28 +2,21 @@ package ru.server.filemanager.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import ru.server.filemanager.dto.request.FileDtoRequest;
-import ru.server.filemanager.dto.request.FolderDtoRequest;
 import ru.server.filemanager.dto.response.FileDtoResponse;
 import ru.server.filemanager.exception.*;
 import ru.server.filemanager.model.FileMetadata;
 import ru.server.filemanager.service.DirectoryService;
 import ru.server.filemanager.service.FileMetadataService;
-import ru.server.filemanager.service.imp.DirectoryServiceImp;
 import ru.server.filemanager.service.FileService;
-import ru.server.filemanager.service.imp.FileServiceImp;
 import ru.server.filemanager.util.ErrorBuilder;
 import ru.server.filemanager.util.helper.FileHelper;
 import ru.server.filemanager.util.validator.FileMetadataValidator;
@@ -37,7 +30,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/files")
 @RequiredArgsConstructor
-public class FileManagerController {
+public class FileController {
     private final FileService fileService;
     private final DirectoryService directoryService;
     private final FileMetadataService fileMetadataService;

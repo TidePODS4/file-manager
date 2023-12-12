@@ -76,13 +76,14 @@
     <div style="margin: 10px;">
 
       <v-data-table :headers="headers" :items="files" disable-pagination :items-per-page="-1" fixed-header
-        v-if="files.length" >
+        v-if="files.length">
         <template v-slot:item="{ item }">
           <tr @dblclick="rowClicked(item)" class="table-row">
             <td class="file-name-cell">
               <v-icon small class="mr-2">{{ getFileIcon(item) }}</v-icon>
               <span>{{ item.name }}</span>
             </td>
+            <td class="fixed-width-cell">{{ getDate(item.update_date) }}</td>
             <td class="fixed-width-cell">{{ formatBytes(item.size) }}</td>
             <td class="fixed-width-cell">
               <v-menu offset-y>
@@ -134,18 +135,17 @@
 
 .fixed-width-cell {
   width: 100px;
-  /* Задайте ширину в соответствии с вашими потребностями */
 }
 
 .table-row:hover {
   background-color: #2B2B2B;
-  /* Задайте цвет в соответствии с вашими потребностями */
 }
 </style>
 
 <script>
 import api from '@/api';
 import FileDownload from 'js-file-download';
+import { format, parseISO } from 'date-fns'
 
 export default {
   data: () => ({
@@ -159,8 +159,8 @@ export default {
     files: [],
     headers: [
       { title: 'Имя файла', key: 'name' },
+      { title: 'Дата изменения', key: 'created_at' },
       { title: 'Размер', key: 'size' },
-      // { title: 'Дата создания', key: 'created_at' },
       { title: 'Действия', key: 'action', sortable: false },
 
     ],
@@ -183,10 +183,10 @@ export default {
   },
   methods: {
     async updateFolderOrFile() {
-      if (this.newItemName === this.selectedItem.name){
+      if (this.newItemName === this.selectedItem.name) {
         this.newItemName = '';
-          this.selectedItem = null;
-          this.renameDialog = false;
+        this.selectedItem = null;
+        this.renameDialog = false;
         return;
       }
 
@@ -208,18 +208,16 @@ export default {
         responseType: 'blob'
       })
         .then(response => {
-        if (item.is_folder){
-          FileDownload(response.data, item.name + ".zip");
-        }
-        else{
-          FileDownload(response.data, item.name);
-        }
+          if (item.is_folder) {
+            FileDownload(response.data, item.name + ".zip");
+          }
+          else {
+            FileDownload(response.data, item.name);
+          }
         });
     },
     uploadFile() {
       this.uploading = true;
-      // Здесь ваш код для загрузки файла
-      // Обновите uploadProgress в процессе загрузки
     },
     setBreadcrumbs(breadcrumbs) {
       this.breadcrumbsList = [{ title: 'Диск', disabled: false, href: '/drive' },];
@@ -234,11 +232,9 @@ export default {
     },
     async fetchData() {
       if (this.$route.params.folderId) {
-        // console.log(this.$route.params.folderId);
         await api.get(`/folders/${this.$route.params.folderId}`)
           .then(response => {
             this.cuurentFolder = response.data;
-            // console.log(this.cuurentFolder);
           })
         await api.get(this.cuurentFolder._links.content.href)
           .then(response => {
@@ -246,10 +242,8 @@ export default {
             this.files = response.data.content;
             console.log(response);
           })
-        // console.log(this.cuurentFolder._links.breadcrumbs.href);
         await api.get(this.cuurentFolder._links.breadcrumbs.href)
           .then(response => {
-            // console.log(response.data);
 
             this.setBreadcrumbs(response.data);
           })
@@ -259,7 +253,6 @@ export default {
           .then(response => {
             this.cuurentFolder = response.data;
             console.log(this.cuurentFolder);
-            // console.log(response.data._links.self);
             if (response.data._embedded == undefined) {
               this.files = [];
             }
@@ -271,6 +264,15 @@ export default {
           })
       }
     },
+
+    getDate(isoDate) {
+      if (!isoDate) {
+        return "";
+      }
+      let date = parseISO(isoDate);
+      return format(date, 'dd/MM/yyyy');
+    },
+
     formatBytes(bytes) {
       if (bytes == null) {
         return "—";
@@ -288,9 +290,6 @@ export default {
       if (item.is_folder) {
         this.$router.push(`/drive/${item.id}`);
       }
-      // else {
-      //   window.open(item._links.preview.href, '_blank');
-      // }
     },
     editItem(item) {
       this.newItemName = item.name;
@@ -309,7 +308,6 @@ export default {
       console.log(this.cuurentFolder._links.self.href);
       await api.post(this.cuurentFolder._links.self.href, newFolder)
         .then(response => {
-          // console.log(response.data);
           this.files.push(response.data)
         })
       this.dialog = false;
@@ -326,8 +324,6 @@ export default {
       this.file = '';
     },
     async saveFile() {
-
-      // console.log(this.file.raw);
       const formData = new FormData();
       formData.append('file', this.file[0]);
 
@@ -369,7 +365,7 @@ export default {
         case 'ppt':
           return 'mdi-file-powerpoint';
         case 'pdf':
-          return 'mdi-file-pdf';
+          return 'mdi-file-pdf-box';
         case 'jpg':
         case 'png':
         case 'gif':

@@ -8,13 +8,11 @@
       </v-app-bar-title>
 
       <v-text-field hide-details placeholder="Поиск" prepend-inner-icon="mdi-magnify" rounded density="compact"
-        variant="solo-filled" flat single-line style="max-width: 400px;" v-model="searchText"
-        ></v-text-field>
+        variant="solo-filled" flat single-line style="max-width: 400px;" v-model="searchText"></v-text-field>
 
-      <!-- <v-autocomplete v-model="searchText" :items="searchitems" auto-select-first density="compact" style="max-width: 400px; margin-top: 22px;"
-        item-props menu-icon="" placeholder="Поиск" prepend-inner-icon="mdi-magnify" rounded theme="dark"
-        variant="solo-filled" flat single-line @update:search="search" hide-no-data></v-autocomplete> -->
-        
+      <v-btn color="blue" icon @click="goToSearch">
+        <v-icon>mdi-magnify</v-icon>
+      </v-btn>
 
       <v-spacer />
 
@@ -54,7 +52,8 @@
 
     <v-navigation-drawer expand-on-hover rail>
       <v-list density="compact" nav>
-        <v-list-item prepend-icon="mdi-folder" title="Мои файлы" value="myfiles" rounded="xl" :to="'drive'"></v-list-item>
+        <v-list-item prepend-icon="mdi-folder" title="Мои файлы" value="myfiles" rounded="xl"
+          :to="'/drive'"></v-list-item>
       </v-list>
     </v-navigation-drawer>
 
@@ -75,7 +74,6 @@ export default {
       userName: '',
       userEmail: '',
       searchText: '',
-      searchitems: [],
     };
   },
   computed: {
@@ -87,19 +85,11 @@ export default {
     },
   },
   methods: {
-    async search() {
-      if (!this.isAuthenticated ){
+    goToSearch() {
+      if (!this.searchText) {
         return;
       }
-      await api.get("http://localhost:8081/search", {
-        params:{
-          q: this.searchText,
-        }
-      })
-      .then(response => {
-        console.log(response.data._embedded.fileDtoResponseList);
-        this.searchitems = response.data._embedded.fileDtoResponseList;
-      });
+      this.$router.push(`/drive/search?q=${this.searchText}`);
     },
     login() {
       keycloak.login();

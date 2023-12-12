@@ -9,15 +9,6 @@ const routes = [
     meta: { requiresAuth: false },
     children: [
       {
-        path: '/as',
-        name: 'Home',
-        // route level code-splitting
-        // this generates a separate chunk (about.[hash].js) for this route
-        // which is lazy-loaded when the route is visited.
-        component: () => import(/* webpackChunkName: "home" */ '@/views/Test.vue'),
-        meta: { requiresAuth: true },
-      },
-      {
         path: '/drive',
         name: 'Drive',
         // route level code-splitting
@@ -33,6 +24,15 @@ const routes = [
         // this generates a separate chunk (about.[hash].js) for this route
         // which is lazy-loaded when the route is visited.
         component: () => import(/* webpackChunkName: "folder" */ '@/views/DriveView.vue'),
+        meta: { requiresAuth: true },
+      },
+      {
+        path: '/drive/search',
+        name: 'Search',
+        // route level code-splitting
+        // this generates a separate chunk (about.[hash].js) for this route
+        // which is lazy-loaded when the route is visited.
+        component: () => import(/* webpackChunkName: "folder" */ '@/views/SearchView.vue'),
         meta: { requiresAuth: true },
       },
     ],

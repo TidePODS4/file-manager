@@ -1,5 +1,6 @@
 package ru.server.filemanager.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
@@ -11,6 +12,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.hateoas.RepresentationModel;
 
+import java.time.ZonedDateTime;
 import java.util.Set;
 import java.util.UUID;
 
@@ -54,4 +56,16 @@ public class FileMetadata {
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     private Set<User> users;
+
+    @Column(name = "creation_date")
+    @NotBlank
+    @JsonProperty(value = "creation_date")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private ZonedDateTime creationDate;
+
+    @Column(name = "update_date")
+    @NotBlank
+    @JsonProperty(value = "update_date")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+    private ZonedDateTime updateDate;
 }

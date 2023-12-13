@@ -2,7 +2,7 @@ import Keycloak from 'keycloak-js';
 import { updateToken } from './keycloak-util';
 
 const keycloak = new Keycloak({
-    url: 'http://localhost:8080',
+    url: 'http://keycloak:8080',
     realm: 'File-Manager',
     clientId: 'file-server-frontend'
 });

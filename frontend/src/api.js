@@ -11,7 +11,7 @@ const api = axios.create({
   const token = ref('')
   const route = useRoute();
   const router = useRouter();
-  
+
   api.interceptors.request.use(async config => {
   token.value = await updateToken();
 //   if (!config.headers) {
@@ -22,8 +22,8 @@ const api = axios.create({
 //   }
   config.headers[AUTHORIZATION_HEADER] = `Bearer ${token.value}`;
   return config;
-}); 
-  
+});
+
 //   api.interceptors.response.use( (response) => {
 //     return response
 //   }, error => {
@@ -32,7 +32,7 @@ const api = axios.create({
 //       reject(error)
 //     })
 //   })
-  
+
   watch(() => route, () => {
     updateToken()
   })

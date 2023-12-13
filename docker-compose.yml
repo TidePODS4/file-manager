@@ -1,0 +1,58 @@
+version: '3.8'
+services:
+  backend:
+    image: backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    depends_on:
+      - postgres
+    environment:
+      - SERVER_PORT= 8081
+      - POSTGRES_DB_URL=jdbc:postgresql://postgres/file_server
+      - POSTGRES_DB_USERNAME=postgres
+      - POSTGRES_DB_PASSWORD=root
+      - FILES_PATH=/file-server/
+      - KEYCLOAK_ISSUER_JWT=http://keycloak:8080/realms/File-Manager
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: file_server
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+    ports:
+      - "15432:5432"
+    volumes:
+      - ./backend/infrastructure/db/create_function.sql:/docker-entrypoint-initdb.d/create_function.sql
+    restart: unless-stopped
+
+  keycloak:
+    container_name: keycloak_container
+    image: quay.io/keycloak/keycloak:22.0.5
+    ports:
+      - "8080:8080"
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    command:
+      - start-dev
+      - --import-realm
+      - --hostname-debug=true
+      - --hostname=keycloak
+    volumes:
+      - ./backend/infrastructure/sso/File-Manager-realm.json:/opt/keycloak/data/import/File-Manager-realm.json
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend

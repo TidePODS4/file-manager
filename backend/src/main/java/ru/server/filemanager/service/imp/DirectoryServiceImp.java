@@ -146,6 +146,7 @@ public class DirectoryServiceImp implements DirectoryService {
 
         var path = fileMetadataService.getFullPathById(id);
         try {
+            folder.setParent(null);
             fileMetadataRepository.delete(folder);
         }
         catch (Exception ex) {

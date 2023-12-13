@@ -12,8 +12,9 @@ spring:
       enabled: true
       max-file-size: 500MB
       max-request-size: 550MB
+
 server:
-  port: 8081
+  port: ${SERVER_PORT}
 
 jwt:
   auth:
@@ -23,4 +24,4 @@ jwt:
 
 files:
   paths:
-    download-dir: C:\file_server\
+    download-dir: ${FILES_PATH}

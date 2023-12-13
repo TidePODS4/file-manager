@@ -1,0 +1,27 @@
+spring:
+  config:
+    import: optional:database.properties
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/File-Manager
+          jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 500MB
+      max-request-size: 550MB
+
+server:
+  port: ${SERVER_PORT}
+
+jwt:
+  auth:
+    converter:
+      client-id: file-server-rest-api
+      principal-attribute: preferred_username
+
+files:
+  paths:
+    download-dir: ${FILES_PATH}

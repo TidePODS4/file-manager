@@ -72,11 +72,13 @@ public class StorageServiceImp implements StorageService {
                 if (entry.isDirectory()) {
                     deleteFolder(entry.getAbsolutePath());
                 } else {
-                    entry.delete();
+                    deleteFile(entry.getAbsolutePath());
                 }
             }
         }
 
-        directory.delete();
+        if (!directory.delete()) {
+            throw new FileNotDeletedException("Folder not deleted");
+        }
     }
 }

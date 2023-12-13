@@ -90,6 +90,8 @@ public class FileServiceImp implements FileService {
                 () -> new FileNotFoundException("File " + id + " not found"));
 
         var path = fileMetadataService.getFullPathById(id);
+
+        fileMetadata.setParent(null);
         fileMetadataRepository.delete(fileMetadata);
         fileMetadataRepository.flush();
 
